@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://b37pecpmvnq88"]
+[gd_scene load_steps=3 format=3 uid="uid://b37pecpmvnq88"]
 
 [ext_resource type="Script" path="res://scenes/main.gd" id="1_vhe1u"]
+[ext_resource type="Script" path="res://backend/stamp_detector.gd" id="2_5x3cl"]
 
 [node name="Main" type="HBoxContainer"]
 anchors_preset = 15
@@ -10,24 +11,25 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_vhe1u")
 
+[node name="StampDetector" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_5x3cl")
+
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="CenterContainer"]
+[node name="StampTarget" type="Panel" parent="CenterContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 200)
 layout_mode = 2
-theme_override_font_sizes/font_size = 25
-text = "Touch"
+mouse_filter = 2
 
-[node name="LetterLabel" type="Label" parent="."]
+[node name="StampLabel" type="Label" parent="."]
 unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 200
+theme_override_font_sizes/font_size = 120
 
-[node name="RecordButton" type="Button" parent="."]
-layout_mode = 2
-text = "Record                 "
-
-[connection signal="pressed" from="RecordButton" to="." method="_on_record_button_pressed"]
+[connection signal="stamp_detected" from="StampDetector" to="." method="_on_stamp_detector_stamp_detected"]

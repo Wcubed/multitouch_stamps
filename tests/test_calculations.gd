@@ -13,4 +13,4 @@ var distance_parameters = [
 	[Vector2(11.5, 4.3), Vector2(11.33, 1.9), Vector2(10.15, 4.5), Vector3(1.36, 2.41, 2.85)],
 ]
 func test_distance_calculation(p = use_parameters(distance_parameters)):
-	assert_almost_eq(MainScene.calculate_distances_clockwise(p[0], p[1], p[2]), p[3], Vector3(0.01, 0.01, 0.01))
+	assert_almost_eq(StampDetector.calculate_distances_clockwise(p[0], p[1], p[2]), p[3], Vector3(0.01, 0.01, 0.01))
