@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scenes/main.gd" id="1_vhe1u"]
 
-[node name="Main" type="CenterContainer"]
+[node name="Main" type="HBoxContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -10,7 +10,24 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_vhe1u")
 
-[node name="Label" type="Label" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="CenterContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 25
 text = "Touch"
+
+[node name="LetterLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 200
+
+[node name="RecordButton" type="Button" parent="."]
+layout_mode = 2
+text = "Record                 "
+
+[connection signal="pressed" from="RecordButton" to="." method="_on_record_button_pressed"]
