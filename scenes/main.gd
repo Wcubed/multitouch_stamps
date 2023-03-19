@@ -9,4 +9,7 @@ func _ready():
 	stamp_target.custom_minimum_size = small_stamp_size
 
 func _on_stamp_detector_stamp_detected(stamp: String):
-	stamp_label.text = stamp
+	if stamp == "pompebled":
+		stamp_label.text = ""
+	else:
+		stamp_label.text += stamp

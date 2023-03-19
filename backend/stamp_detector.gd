@@ -65,6 +65,15 @@ const SMALL_STAMP_SIZE_CM := Vector2(3.9, 5.7)
 # How far off are distances allowed to be to still be considered to match.
 const MATCH_TOLERANCE_CM := 0.25
 
+# Timer to prevent the stamps from firing the "stamp detected" event continuously.
+var stamp_repeat_timeout_timer := Timer.new()
+const STAMP_REPEAT_TIMEOUT_SECS := 0.5
+var previous_detected_stamp := ""
+# Needed to make sure stamps don't repeat themselves if they are kept on the screen
+# or moved after keeping still for a time.
+var ready_for_next_stamp := true
+
+# Keeps a record of all active touches.
 var touches = {}
 
 # How many dots (for now we assume that is pixels) per centimeter on the screen.
@@ -73,6 +82,10 @@ var dots_per_centimeter: float = 0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	stamp_repeat_timeout_timer.one_shot = true
+	stamp_repeat_timeout_timer.timeout.connect(self._on_stamp_repeat_timer_timeout)
+	self.add_child(stamp_repeat_timeout_timer)
+	
 	var screen_id := DisplayServer.window_get_current_screen()
 	var screen_dpi := DisplayServer.screen_get_dpi(screen_id)
 	dots_per_centimeter = float(screen_dpi) / INCH_TO_CM
@@ -98,8 +111,24 @@ func process_touches():
 		var distances_cm := distances / dots_per_centimeter
 		
 		for stamp in STAMPS:
+			# TODO (2023-03-19): there is a bug where sometimes a stamp get's detected multiple times
+			#   quickly just after putting it on the screen. Even though the timeout is longer than that.
 			if distances_match_template(distances_cm, STAMPS[stamp]):
-				self.stamp_detected.emit(stamp)
+				if ready_for_next_stamp:
+					previous_detected_stamp = stamp
+					ready_for_next_stamp = false
+					stamp_repeat_timeout_timer.stop()
+					self.stamp_detected.emit(stamp)
+				
+	elif touches.is_empty():
+		# Only once all touches are gone, and the timeout has run out,
+		# should we detect another stamp.
+		stamp_repeat_timeout_timer.start(STAMP_REPEAT_TIMEOUT_SECS)
+	elif not stamp_repeat_timeout_timer.is_stopped():
+		# Any touches other than 3 during the timeout reset the timeout.
+		# This should prevent the timeout firing after a stamp doesn't make
+		# contact with all 3 feet.
+		stamp_repeat_timeout_timer.start(STAMP_REPEAT_TIMEOUT_SECS)
 
 # Calculates the distances between three points in pixels, and returns them in
 # clockwise order, regardless of the original order of the points.
@@ -166,3 +195,12 @@ func within_tolerance(value: float, target: float) -> bool:
 # Returns the small stamp size in pixels.
 func get_small_stamp_size() -> Vector2:
 	return SMALL_STAMP_SIZE_CM * dots_per_centimeter
+
+
+func _on_stamp_repeat_timer_timeout():
+	ready_for_next_stamp = true
+	
+	# The call to process touches is necessary, because there might already
+	# be a new stamp placed down and not moving. Which would mean no events
+	# would fire from that stamp.
+	process_touches()
